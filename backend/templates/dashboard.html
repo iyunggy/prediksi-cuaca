@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecasting System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <nav class="bg-blue-600 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-white text-xl font-bold flex items-center">
+                <i class="fas fa-cloud-sun-rain mr-2"></i> WeatherForecast AI
+            </a>
+            <div>
+                <span class="text-blue-200 text-sm">Django + Tailwind + ML</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm uppercase font-bold">Total Data Point</p>
+                        <h2 class="text-2xl font-bold text-gray-800">{{ latest_data.count|default:"0" }}</h2>
+                    </div>
+                    <div class="bg-blue-100 text-blue-500 p-3 rounded-full">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm uppercase font-bold">ML Status</p>
+                        <h2 class="text-lg font-bold text-green-600">Ready to Train</h2>
+                    </div>
+                    <div class="bg-green-100 text-green-500 p-3 rounded-full">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-purple-500 flex items-center justify-between">
+                <div>
+                    <p class="text-gray-500 text-sm uppercase font-bold">Data Source</p>
+                    <p class="text-xs text-gray-400">Open-Meteo & Manual</p>
+                </div>
+                <a href="{% url 'fetch_historical_data' %}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-sm transition duration-300">
+                    <i class="fas fa-sync-alt animate-pulse mr-1"></i> Sync History
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-gray-800 p-4 border-b border-gray-700">
+                        <h3 class="text-white font-bold text-lg"><i class="fas fa-satellite-dish mr-2"></i> Input Data Cuaca</h3>
+                        <p class="text-gray-400 text-xs mt-1">Simulasi input data real-time (pengganti sensor IoT)</p>
+                    </div>
+                    <div class="p-6">
+                        <form method="POST" action="">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_temperature">
+                                    Temperature (°C)
+                                </label>
+                                {{ form.temperature }}
+                                </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_humidity">
+                                    Humidity (%)
+                                </label>
+                                {{ form.humidity }}
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_pressure">
+                                    Pressure (hPa)
+                                </label>
+                                {{ form.pressure }}
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_wind_speed">
+                                    Wind Speed (km/h)
+                                </label>
+                                {{ form.wind_speed }}
+                            </div>
+
+                             <div class="mb-6">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_rainfall">
+                                    Rainfall (mm)
+                                </label>
+                                {{ form.rainfall }}
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                                <i class="fas fa-save mr-2"></i> Simpan Data Observasi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-white p-4 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800 text-lg">Monitoring Data Terkini</h3>
+                        <span class="text-xs font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 uppercase last:mr-0 mr-1">
+                            Real-time & History
+                        </span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-800 text-white">
+                                <tr>
+                                    <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm">Waktu</th>
+                                    <th class="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">Sumber</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Temp</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Hum</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Wind</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Rain</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for data in latest_data %}
+                                <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200 transition duration-150">
+                                    <td class="text-left py-3 px-4 text-xs">{{ data.timestamp|date:"d M Y H:i" }}</td>
+                                    <td class="text-left py-3 px-4">
+                                        {% if data.source == 'API' %}
+                                            <span class="bg-purple-200 text-purple-600 py-1 px-3 rounded-full text-xs font-bold">API</span>
+                                        {% elif data.source == 'MANUAL' %}
+                                            <span class="bg-blue-200 text-blue-600 py-1 px-3 rounded-full text-xs font-bold">SENSOR</span>
+                                        {% else %}
+                                            <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs font-bold">PREDIKSI</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-left py-3 px-4 font-bold">{{ data.temperature }}°C</td>
+                                    <td class="text-left py-3 px-4">{{ data.humidity }}%</td>
+                                    <td class="text-left py-3 px-4">{{ data.wind_speed }} km/h</td>
+                                    <td class="text-left py-3 px-4">{{ data.rainfall }} mm</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">
+                                        Belum ada data. Silakan klik tombol <b>Sync History</b> atau input data manual.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <footer class="text-center py-6 text-gray-500 text-sm">
+        &copy; 2025 Weather IoT & ML System. Based on Research Data Mining.
+    </footer>
+
+</body>
+</html>

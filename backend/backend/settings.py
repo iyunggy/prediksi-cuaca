@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-e55ej@vf75ntf3u(&-a#9#)ip@5&dvv%u!$p+z#v&fo!*p#=#f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,9 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'api',
+    'web',
 ]
 
 MIDDLEWARE = [
+    # whitenoise (get static file in django 3)
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

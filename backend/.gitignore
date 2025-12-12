@@ -102,3 +102,4 @@ web/migrations/*
 !web/migrations/__init__.py
 api/migrations/*
 !api/migrations/__init__.py
+.cache.sqlite/
