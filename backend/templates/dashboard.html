@@ -6,6 +6,11 @@
     <title>Weather Forecasting System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 300px; z-index: 1; }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
 
@@ -39,7 +44,7 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <p class="text-gray-500 text-sm uppercase font-bold">ML Status</p>
-                        <h2 class="text-lg font-bold text-green-600">Ready to Train</h2>
+                        <h2 class="text-lg font-bold text-green-600">Ready</h2>
                     </div>
                     <div class="bg-green-100 text-green-500 p-3 rounded-full">
                         <i class="fas fa-brain"></i>
@@ -47,14 +52,18 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-purple-500 flex items-center justify-between">
-                <div>
-                    <p class="text-gray-500 text-sm uppercase font-bold">Data Source</p>
-                    <p class="text-xs text-gray-400">Open-Meteo & Manual</p>
-                </div>
-                <a href="{% url 'fetch_historical_data' %}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded text-sm transition duration-300">
-                    <i class="fas fa-sync-alt animate-pulse mr-1"></i> Sync History
-                </a>
+            <div class="bg-white rounded-lg shadow p-2 border-l-4 border-purple-500 col-span-1 md:col-span-1">
+                <p class="text-gray-500 text-sm uppercase font-bold mb-2 px-2">Pilih Lokasi Data</p>
+                <div id="map" class="rounded border mb-2"></div>
+                <form action="{% url 'fetch_historical_data' %}" method="GET" class="px-2 pb-2">
+                    <div class="flex space-x-2 mb-2">
+                        <input type="text" name="lat" id="lat_input" value="-6.2088" class="w-1/2 text-xs border p-1 rounded bg-gray-100" readonly>
+                        <input type="text" name="lon" id="lon_input" value="106.8456" class="w-1/2 text-xs border p-1 rounded bg-gray-100" readonly>
+                    </div>
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-4 rounded text-sm transition duration-300">
+                        <i class="fas fa-sync-alt mr-1"></i> Sync Data Lokasi Ini
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -64,49 +73,32 @@
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-gray-800 p-4 border-b border-gray-700">
                         <h3 class="text-white font-bold text-lg"><i class="fas fa-satellite-dish mr-2"></i> Input Data Cuaca</h3>
-                        <p class="text-gray-400 text-xs mt-1">Simulasi input data real-time (pengganti sensor IoT)</p>
                     </div>
                     <div class="p-6">
                         <form method="POST" action="">
                             {% csrf_token %}
-                            
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_temperature">
-                                    Temperature (°C)
-                                </label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Temperature (°C)</label>
                                 {{ form.temperature }}
-                                </div>
-
+                            </div>
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_humidity">
-                                    Humidity (%)
-                                </label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Humidity (%)</label>
                                 {{ form.humidity }}
                             </div>
-
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_pressure">
-                                    Pressure (hPa)
-                                </label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Pressure (hPa)</label>
                                 {{ form.pressure }}
                             </div>
-
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_wind_speed">
-                                    Wind Speed (km/h)
-                                </label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Wind Speed (km/h)</label>
                                 {{ form.wind_speed }}
                             </div>
-
                              <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="id_rainfall">
-                                    Rainfall (mm)
-                                </label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Rainfall (mm)</label>
                                 {{ form.rainfall }}
                             </div>
-
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                                <i class="fas fa-save mr-2"></i> Simpan Data Observasi
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                                <i class="fas fa-save mr-2"></i> Simpan
                             </button>
                         </form>
                     </div>
@@ -117,9 +109,6 @@
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-white p-4 border-b flex justify-between items-center">
                         <h3 class="font-bold text-gray-800 text-lg">Monitoring Data Terkini</h3>
-                        <span class="text-xs font-semibold inline-block py-1 px-2 rounded text-blue-600 bg-blue-200 uppercase last:mr-0 mr-1">
-                            Real-time & History
-                        </span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white">
@@ -135,7 +124,7 @@
                             </thead>
                             <tbody class="text-gray-700">
                                 {% for data in latest_data %}
-                                <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200 transition duration-150">
+                                <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200">
                                     <td class="text-left py-3 px-4 text-xs">{{ data.timestamp|date:"d M Y H:i" }}</td>
                                     <td class="text-left py-3 px-4">
                                         {% if data.source == 'API' %}
@@ -148,14 +137,12 @@
                                     </td>
                                     <td class="text-left py-3 px-4 font-bold">{{ data.temperature }}°C</td>
                                     <td class="text-left py-3 px-4">{{ data.humidity }}%</td>
-                                    <td class="text-left py-3 px-4">{{ data.wind_speed }} km/h</td>
-                                    <td class="text-left py-3 px-4">{{ data.rainfall }} mm</td>
+                                    <td class="text-left py-3 px-4">{{ data.wind_speed }}</td>
+                                    <td class="text-left py-3 px-4">{{ data.rainfall }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="6" class="text-center py-8 text-gray-500">
-                                        Belum ada data. Silakan klik tombol <b>Sync History</b> atau input data manual.
-                                    </td>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">No Data Available</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -164,12 +151,33 @@
                 </div>
             </div>
         </div>
-        
     </div>
 
-    <footer class="text-center py-6 text-gray-500 text-sm">
-        &copy; 2025 Weather IoT & ML System. Based on Research Data Mining.
-    </footer>
+    <script>
+        var map = L.map('map').setView([-6.2088, 106.8456], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
 
+        var marker = L.marker([-6.2088, 106.8456], {draggable: true}).addTo(map);
+
+        function updateInputs(lat, lng) {
+            document.getElementById('lat_input').value = lat.toFixed(4);
+            document.getElementById('lon_input').value = lng.toFixed(4);
+        }
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+            marker.setLatLng([lat, lng]);
+            updateInputs(lat, lng);
+        });
+
+        marker.on('dragend', function(e) {
+            var position = marker.getLatLng();
+            updateInputs(position.lat, position.lng);
+        });
+    </script>
 </body>
 </html>
