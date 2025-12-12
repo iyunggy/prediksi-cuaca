@@ -9,29 +9,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        #map { height: 300px; z-index: 1; }
+        #map { height: 250px; z-index: 1; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
-
     <nav class="bg-blue-600 p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <a href="#" class="text-white text-xl font-bold flex items-center">
                 <i class="fas fa-cloud-sun-rain mr-2"></i> WeatherForecast AI
             </a>
             <div>
-                <span class="text-blue-200 text-sm">Django + Tailwind + ML</span>
+                <span class="text-blue-200 text-sm">Django + Tailwind + Random Forest</span>
             </div>
         </div>
     </nav>
-
     <div class="container mx-auto px-4 py-8">
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="text-gray-500 text-sm uppercase font-bold">Total Data Point</p>
+                        <p class="text-gray-500 text-xs uppercase font-bold">Total Records</p>
                         <h2 class="text-2xl font-bold text-gray-800">{{ latest_data.count|default:"0" }}</h2>
                     </div>
                     <div class="bg-blue-100 text-blue-500 p-3 rounded-full">
@@ -39,11 +36,10 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-green-500">
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="text-gray-500 text-sm uppercase font-bold">ML Status</p>
+                        <p class="text-gray-500 text-xs uppercase font-bold">ML Status</p>
                         <h2 class="text-lg font-bold text-green-600">Ready</h2>
                     </div>
                     <div class="bg-green-100 text-green-500 p-3 rounded-full">
@@ -51,50 +47,102 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-2 border-l-4 border-purple-500 col-span-1 md:col-span-1">
-                <p class="text-gray-500 text-sm uppercase font-bold mb-2 px-2">Pilih Lokasi Data</p>
-                <div id="map" class="rounded border mb-2"></div>
-                <form action="{% url 'fetch_historical_data' %}" method="GET" class="px-2 pb-2">
-                    <div class="flex space-x-2 mb-2">
-                        <input type="text" name="lat" id="lat_input" value="-6.2088" class="w-1/2 text-xs border p-1 rounded bg-gray-100" readonly>
-                        <input type="text" name="lon" id="lon_input" value="106.8456" class="w-1/2 text-xs border p-1 rounded bg-gray-100" readonly>
+            <div class="bg-white rounded-lg shadow p-2 border-l-4 border-purple-500">
+                <p class="text-gray-500 text-xs uppercase font-bold mb-1 px-2">API & Peta</p>
+                <div id="map" class="rounded border mb-2 h-20"></div>
+                <form action="{% url 'fetch_historical_data' %}" method="GET" class="px-2">
+                    <input type="hidden" name="lat" id="lat_input" value="-6.2088">
+                    <input type="hidden" name="lon" id="lon_input" value="106.8456">
+                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-2 rounded text-xs transition duration-300 mb-2">
+                        <i class="fas fa-sync-alt mr-1"></i> Sync API
+                    </button>
+                </form>
+                <div class="px-2">
+                    <a href="{% url 'fetch_bmkg_data' %}" class="block text-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-1 px-2 rounded text-xs transition duration-300">
+                        <i class="fas fa-building mr-1"></i> Sync BMKG
+                    </a>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-teal-500">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-gray-500 text-xs uppercase font-bold">Import CSV</p>
+                    <div class="bg-teal-100 text-teal-500 p-2 rounded-full">
+                        <i class="fas fa-file-csv"></i>
                     </div>
-                    <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-4 rounded text-sm transition duration-300">
-                        <i class="fas fa-sync-alt mr-1"></i> Sync Data Lokasi Ini
+                </div>
+                <form action="{% url 'import_csv' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" name="csv_file" accept=".csv" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 mb-3"/>
+                    <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1 px-2 rounded text-xs transition duration-300">
+                        <i class="fas fa-upload mr-1"></i> Upload
                     </button>
                 </form>
             </div>
+            <div class="bg-white rounded-lg shadow p-4 border-l-4 border-indigo-600">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="text-gray-500 text-xs uppercase font-bold">Random Forest</p>
+                    <div class="bg-indigo-100 text-indigo-500 p-2 rounded-full">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                </div>
+                {% if r2_score != '-' %}
+                    <div class="grid grid-cols-3 gap-1 text-center mb-2">
+                        <div class="bg-gray-50 p-1 rounded">
+                            <p class="text-[8px] text-gray-500">R²</p>
+                            <p class="font-bold text-xs text-indigo-600">{{ r2_score }}%</p>
+                        </div>
+                        <div class="bg-gray-50 p-1 rounded">
+                            <p class="text-[8px] text-gray-500">MAE</p>
+                            <p class="font-bold text-xs text-gray-700">{{ mae_score }}</p>
+                        </div>
+                        <div class="bg-gray-50 p-1 rounded">
+                            <p class="text-[8px] text-gray-500">RMSE</p>
+                            <p class="font-bold text-xs text-gray-700">{{ rmse_score }}</p>
+                        </div>
+                    </div>
+                    {% if prediction %}
+                    <div class="mt-2 bg-green-50 p-1 rounded border border-green-200 text-center">
+                        <p class="text-[8px] text-green-600 font-bold uppercase">Prediksi Next</p>
+                        <p class="text-lg font-bold text-green-700">{{ prediction.temperature }}°C</p>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-2 bg-gray-50 rounded mb-2">
+                        <p class="text-xs text-gray-400">Untrained</p>
+                    </div>
+                {% endif %}
+                <a href="{% url 'train_model' %}" class="block mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1 px-2 rounded text-xs text-center transition duration-300">
+                    <i class="fas fa-cogs mr-1"></i> Train
+                </a>
+            </div>
         </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-gray-800 p-4 border-b border-gray-700">
-                        <h3 class="text-white font-bold text-lg"><i class="fas fa-satellite-dish mr-2"></i> Input Data Cuaca</h3>
+                        <h3 class="text-white font-bold text-lg"><i class="fas fa-satellite-dish mr-2"></i> Input Manual</h3>
                     </div>
                     <div class="p-6">
                         <form method="POST" action="">
                             {% csrf_token %}
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Temperature (°C)</label>
+                            <div class="mb-3">
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Temperature (°C)</label>
                                 {{ form.temperature }}
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Humidity (%)</label>
+                            <div class="mb-3">
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Humidity (%)</label>
                                 {{ form.humidity }}
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Pressure (hPa)</label>
+                            <div class="mb-3">
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Pressure (hPa)</label>
                                 {{ form.pressure }}
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Wind Speed (km/h)</label>
+                            <div class="mb-3">
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Wind Speed (km/h)</label>
                                 {{ form.wind_speed }}
                             </div>
-                             <div class="mb-6">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Rainfall (mm)</label>
+                             <div class="mb-4">
+                                <label class="block text-gray-700 text-xs font-bold mb-1">Rainfall (mm)</label>
                                 {{ form.rainfall }}
                             </div>
                             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
@@ -104,7 +152,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-white p-4 border-b flex justify-between items-center">
@@ -114,35 +161,39 @@
                         <table class="min-w-full bg-white">
                             <thead class="bg-gray-800 text-white">
                                 <tr>
-                                    <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-sm">Waktu</th>
-                                    <th class="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">Sumber</th>
-                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Temp</th>
-                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Hum</th>
-                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Wind</th>
-                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm">Rain</th>
+                                    <th class="w-1/4 text-left py-3 px-4 uppercase font-semibold text-xs">Waktu</th>
+                                    <th class="w-1/6 text-left py-3 px-4 uppercase font-semibold text-xs">Sumber</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-xs">Temp</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-xs">Hum</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-xs">Wind</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-xs">Rain</th>
                                 </tr>
                             </thead>
-                            <tbody class="text-gray-700">
+                            <tbody class="text-gray-700 text-sm">
                                 {% for data in latest_data %}
-                                <tr class="{% cycle 'bg-gray-100' 'bg-white' %} hover:bg-gray-200">
-                                    <td class="text-left py-3 px-4 text-xs">{{ data.timestamp|date:"d M Y H:i" }}</td>
-                                    <td class="text-left py-3 px-4">
+                                <tr class="{% cycle 'bg-gray-50' 'bg-white' %} hover:bg-gray-100 border-b">
+                                    <td class="text-left py-2 px-4 text-xs">{{ data.timestamp|date:"d/m/Y H:i" }}</td>
+                                    <td class="text-left py-2 px-4">
                                         {% if data.source == 'API' %}
-                                            <span class="bg-purple-200 text-purple-600 py-1 px-3 rounded-full text-xs font-bold">API</span>
+                                            <span class="bg-purple-100 text-purple-600 py-1 px-2 rounded text-[10px] font-bold">API</span>
                                         {% elif data.source == 'MANUAL' %}
-                                            <span class="bg-blue-200 text-blue-600 py-1 px-3 rounded-full text-xs font-bold">SENSOR</span>
+                                            <span class="bg-blue-100 text-blue-600 py-1 px-2 rounded text-[10px] font-bold">MANUAL</span>
+                                        {% elif data.source == 'BMKG' %}
+                                            <span class="bg-orange-100 text-orange-600 py-1 px-2 rounded text-[10px] font-bold">BMKG</span>
+                                        {% elif data.source == 'CSV_IMPORT' %}
+                                            <span class="bg-teal-100 text-teal-600 py-1 px-2 rounded text-[10px] font-bold">CSV</span>
                                         {% else %}
-                                            <span class="bg-green-200 text-green-600 py-1 px-3 rounded-full text-xs font-bold">PREDIKSI</span>
+                                            <span class="bg-green-100 text-green-600 py-1 px-2 rounded text-[10px] font-bold">PREDIKSI</span>
                                         {% endif %}
                                     </td>
-                                    <td class="text-left py-3 px-4 font-bold">{{ data.temperature }}°C</td>
-                                    <td class="text-left py-3 px-4">{{ data.humidity }}%</td>
-                                    <td class="text-left py-3 px-4">{{ data.wind_speed }}</td>
-                                    <td class="text-left py-3 px-4">{{ data.rainfall }}</td>
+                                    <td class="text-left py-2 px-4 font-bold">{{ data.temperature }}</td>
+                                    <td class="text-left py-2 px-4">{{ data.humidity }}</td>
+                                    <td class="text-left py-2 px-4">{{ data.wind_speed }}</td>
+                                    <td class="text-left py-2 px-4">{{ data.rainfall }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="6" class="text-center py-8 text-gray-500">No Data Available</td>
+                                    <td colspan="6" class="text-center py-8 text-gray-500">No Data</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -152,28 +203,20 @@
             </div>
         </div>
     </div>
-
     <script>
-        var map = L.map('map').setView([-6.2088, 106.8456], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
+        var map = L.map('map', {zoomControl: false}).setView([-6.2088, 106.8456], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         var marker = L.marker([-6.2088, 106.8456], {draggable: true}).addTo(map);
-
         function updateInputs(lat, lng) {
             document.getElementById('lat_input').value = lat.toFixed(4);
             document.getElementById('lon_input').value = lng.toFixed(4);
         }
-
         map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
             marker.setLatLng([lat, lng]);
             updateInputs(lat, lng);
         });
-
         marker.on('dragend', function(e) {
             var position = marker.getLatLng();
             updateInputs(position.lat, position.lng);
